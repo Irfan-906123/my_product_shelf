@@ -20,11 +20,30 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   String? _error;
 
+  // Search: the controller is owned by this screen, so we dispose it.
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
   @override
   void initState() {
     super.initState();
     debugPrint('HomeScreen: initState');
     _loadProducts(); // one-time setup, NOT in build()
+  }
+
+  @override
+  void dispose() {
+    debugPrint('HomeScreen: dispose');
+    _searchController.dispose(); // we created it, so we must dispose it
+    super.dispose();
+  }
+
+  // Products whose title contains the search text.
+  List<Product> get _visibleProducts {
+    final q = _query.toLowerCase();
+    return _products
+        .where((p) => p.title.toLowerCase().contains(q))
+        .toList();
   }
 
   Future<void> _loadProducts() async {
@@ -33,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return; // screen closed while waiting? stop.
       setState(() {
         _products = products; // replace, never add -> no duplicates
+        _error = null; // a refresh after an error clears it
         _isLoading = false;
       });
     } on ApiException catch (e) {
@@ -58,6 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadProducts();
   }
 
+  // Pull-to-refresh must return a Future.
+  Future<void> _refresh() async {
+    await _loadProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint('HomeScreen: build');
@@ -73,6 +98,26 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
+            TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                // Search text is local UI state -> setState.
+                setState(() {
+                  _query = value.trim();
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: const Color(0xFFF3F5F9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 const Text(
@@ -81,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const Spacer(),
                 Text(
-                  '${_products.length} items',
+                  '${_visibleProducts.length} items',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -114,11 +159,24 @@ class _HomeScreenState extends State<HomeScreen> {
         message: 'No products found',
       );
     }
-    return ListView.builder(
-      itemCount: _products.length,
-      itemBuilder: (context, index) {
-        return ProductCard(product: _products[index]);
-      },
+
+    final visible = _visibleProducts;
+    if (visible.isEmpty) {
+      return StatusView(
+        icon: Icons.search_off,
+        message: 'No products match "$_query"',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView.builder(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        itemCount: visible.length,
+        itemBuilder: (context, index) {
+          return ProductCard(product: visible[index]);
+        },
+      ),
     );
   }
 }

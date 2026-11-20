@@ -21,10 +21,16 @@ class _MainShellState extends State<MainShell> {
       // when you switch tabs.
       body: IndexedStack(
         index: _currentIndex,
-        children: const [
-          HomeScreen(),
-          SavedScreen(),
-          ProfileScreen(),
+        children: [
+          const HomeScreen(),
+          SavedScreen(
+            onBrowse: () {
+              setState(() {
+                _currentIndex = 0; // go to Home tab
+              });
+            },
+          ),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
