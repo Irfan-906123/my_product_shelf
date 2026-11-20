@@ -33,7 +33,11 @@ class ApiService {
       throw ApiException('Request timed out. Please try again.');
     } on http.ClientException {
       throw ApiException('Network error. Please try again.');
+      
     }
+    on FormatException {
+  throw ApiException('Invalid server response. Please try again.');
+}
   }
 }
 
@@ -43,5 +47,5 @@ class ApiException implements Exception {
   ApiException(this.message);
 
   @override
-  String toString() => message;
+  String toString()=> 'ApiException: $message';
 }
