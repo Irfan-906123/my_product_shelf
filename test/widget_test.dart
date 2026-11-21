@@ -3,13 +3,20 @@ import 'package:provider/provider.dart';
 
 import 'package:my_product_shelf/main.dart';
 import 'package:my_product_shelf/providers/favourites_provider.dart';
+import 'package:my_product_shelf/providers/profile_provider.dart';
+import 'package:my_product_shelf/services/storage_service.dart';
 
 void main() {
   testWidgets('App starts and shows My Shelf', (WidgetTester tester) async {
-    // MyApp needs the Favourites provider above it, just like in main().
+    final storage = StorageService();
+
+    // MyApp needs both providers above it, just like in main().
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => Favourites(),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => Favourites(storage)),
+          ChangeNotifierProvider(create: (_) => ProfileProvider(storage)),
+        ],
         child: const MyApp(),
       ),
     );

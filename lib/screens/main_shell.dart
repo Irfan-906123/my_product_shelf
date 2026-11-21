@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/favourites_provider.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'saved_screen.dart';
@@ -41,13 +43,27 @@ class _MainShellState extends State<MainShell> {
             _currentIndex = index;
           });
         },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-          NavigationDestination(
-            icon: Icon(Icons.bookmark_border),
-            label: 'Saved',
+        destinations: [
+          const NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
           ),
           NavigationDestination(
+            // Consumer: only this badge rebuilds when favourites change, so
+            // the saved count is visible from every tab (including Home).
+            icon: Consumer<Favourites>(
+              builder: (context, favourites, child) {
+                return Badge(
+                  isLabelVisible: favourites.count > 0,
+                  label: Text('${favourites.count}'),
+                  child: child,
+                );
+              },
+              child: const Icon(Icons.bookmark_border),
+            ),
+            label: 'Saved',
+          ),
+          const NavigationDestination(
             icon: Icon(Icons.person_outline),
             label: 'Profile',
           ),

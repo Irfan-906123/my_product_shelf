@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/product.dart';
+import '../providers/profile_provider.dart';
 import '../services/api_service.dart';
 import '../widgets/product_card.dart';
+import 'add_product_screen.dart';
 import '../widgets/status_view.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -87,6 +90,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     debugPrint('HomeScreen: build');
 
+    // watch: the greeting updates as soon as the name is saved in Profile.
+    final name = context.watch<ProfileProvider>().name;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -96,6 +102,32 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text(
               'My Shelf',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            // Row: greeting on the left, Add action on the right.
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    name.isEmpty ? 'Hello, there' : 'Hello, $name',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                FilledButton.tonal(
+                  onPressed: () {
+                    // push: open the form on top of Home (back returns here).
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const AddProductScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('+ Add'),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextField(
