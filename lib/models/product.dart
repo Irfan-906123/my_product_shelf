@@ -28,11 +28,6 @@ class Product {
   // Product  ->  JSON (for shared_preferences).
   // Only id, title, price and thumbnail are stored, as the assignment says.
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'price': price,
-      'thumbnail': thumbnail,
-    };
+    return {'id': id, 'title': title, 'price': price, 'thumbnail': thumbnail};
   }
 }

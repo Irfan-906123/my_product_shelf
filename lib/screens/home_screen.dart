@@ -44,9 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Products whose title contains the search text.
   List<Product> get _visibleProducts {
     final q = _query.toLowerCase();
-    return _products
-        .where((p) => p.title.toLowerCase().contains(q))
-        .toList();
+    return _products.where((p) => p.title.toLowerCase().contains(q)).toList();
   }
 
   Future<void> _loadProducts() async {
